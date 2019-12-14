@@ -3,7 +3,6 @@ package com.swiftcode.service.dto;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 
 /**
  * BottleneckDTO Class
@@ -19,6 +18,8 @@ public class BottleneckDTO implements Serializable {
     private String userName;
     private String deviceCode;
     private String deviceName;
-    private LocalDate startTime;
-    private LocalDate endTime;
+    private String startDate;
+    private String startTime;
+    private String endDate;
+    private String endTime;
 }

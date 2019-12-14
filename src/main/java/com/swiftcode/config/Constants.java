@@ -12,6 +12,7 @@ public final class Constants {
     public static final String DEFAULT_LANGUAGE = "zh-cn";
     public static final String ANONYMOUS_USER = "anonymoususer";
     public static final String DEFAULT_PWD = "123456";
+    public static final String AUTH_CODE = "Basic RGV2MDM6MTIzNDU2";
 
     private Constants() {
     }
