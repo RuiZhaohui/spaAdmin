@@ -36,132 +36,6 @@ public class BottleneckService {
     @Value("${sap-url}")
     private String sapUrl;
 
-    public static void main(String[] args) {
-        /*String resXml = "<soap-env:Envelope xmlns:soap-env=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-            "    <soap-env:Header/>\n" +
-            "    <soap-env:Body>\n" +
-            "        <n0:ZpmSearchEqunrResponse xmlns:n0=\"urn:sap-com:document:sap:soap:functions:mc-style\">\n" +
-            "            <EtData>\n" +
-            "                <item>\n" +
-            "                    <Equnr>A1-A0-001MLJ-01</Equnr>\n" +
-            "                    <Eqktx>炼胶A区1#密炼机电控柜</Eqktx>\n" +
-            "                    <Tplnr>A1-A0</Tplnr>\n" +
-            "                    <Pltxt>炼胶分公司A区</Pltxt>\n" +
-            "                    <Boeq>否</Boeq>\n" +
-            "                    <Rtime>0</Rtime>\n" +
-            "                    <Swerk>A001</Swerk>\n" +
-            "                    <Txtmd>贵州轮胎股份有限公司</Txtmd>\n" +
-            "                    <Anlnr>000011000061</Anlnr>\n" +
-            "                    <Abckz>1</Abckz>\n" +
-            "                    <Abctx>关键A类设备</Abctx>\n" +
-            "                </item>\n" +
-            "                <item>\n" +
-            "                    <Equnr>A1-A0-001MLJ-02</Equnr>\n" +
-            "                    <Eqktx>test EQ1111</Eqktx>\n" +
-            "                    <Tplnr>A1-A0</Tplnr>\n" +
-            "                    <Pltxt>炼胶分公司A区</Pltxt>\n" +
-            "                    <Boeq>否</Boeq>\n" +
-            "                    <Rtime>0</Rtime>\n" +
-            "                    <Swerk>A001</Swerk>\n" +
-            "                    <Txtmd>贵州轮胎股份有限公司</Txtmd>\n" +
-            "                    <Anlnr/>\n" +
-            "                    <Abckz>2</Abckz>\n" +
-            "                    <Abctx>A类设备</Abctx>\n" +
-            "                </item>\n" +
-            "                <item>\n" +
-            "                    <Equnr>A1-A0-003MLJ</Equnr>\n" +
-            "                    <Eqktx>炼胶分公司-A区-A3生产</Eqktx>\n" +
-            "                    <Tplnr>A1-A0</Tplnr>\n" +
-            "                    <Pltxt>炼胶分公司A区</Pltxt>\n" +
-            "                    <Boeq>否</Boeq>\n" +
-            "                    <Rtime>0</Rtime>\n" +
-            "                    <Swerk>A001</Swerk>\n" +
-            "                    <Txtmd>贵州轮胎股份有限公司</Txtmd>\n" +
-            "                    <Anlnr/>\n" +
-            "                    <Abckz>2</Abckz>\n" +
-            "                    <Abctx>A类设备</Abctx>\n" +
-            "                </item>\n" +
-            "                <item>\n" +
-            "                    <Equnr>A1-A0-003MLJ-1H</Equnr>\n" +
-            "                    <Eqktx>炼胶分公司-A区-A3生产线-接取</Eqktx>\n" +
-            "                    <Tplnr>A1-A0</Tplnr>\n" +
-            "                    <Pltxt>炼胶分公司A区</Pltxt>\n" +
-            "                    <Boeq>否</Boeq>\n" +
-            "                    <Rtime>0</Rtime>\n" +
-            "                    <Swerk>A001</Swerk>\n" +
-            "                    <Txtmd>贵州轮胎股份有限公司</Txtmd>\n" +
-            "                    <Anlnr>000014000042</Anlnr>\n" +
-            "                    <Abckz>2</Abckz>\n" +
-            "                    <Abctx>A类设备</Abctx>\n" +
-            "                </item>\n" +
-            "                <item>\n" +
-            "                    <Equnr>A1-A0-003MLJ-1H-0C</Equnr>\n" +
-            "                    <Eqktx>炼胶分公司-A区-A3生产线-接取-电机</Eqktx>\n" +
-            "                    <Tplnr>A1-A0</Tplnr>\n" +
-            "                    <Pltxt>炼胶分公司A区</Pltxt>\n" +
-            "                    <Boeq>否</Boeq>\n" +
-            "                    <Rtime>0</Rtime>\n" +
-            "                    <Swerk>A001</Swerk>\n" +
-            "                    <Txtmd>贵州轮胎股份有限公司</Txtmd>\n" +
-            "                    <Anlnr/>\n" +
-            "                    <Abckz>2</Abckz>\n" +
-            "                    <Abctx>A类设备</Abctx>\n" +
-            "                </item>\n" +
-            "                <item>\n" +
-            "                    <Equnr>A1-BO-001MLJ</Equnr>\n" +
-            "                    <Eqktx>炼胶分公司-B区-B1生产线</Eqktx>\n" +
-            "                    <Tplnr>A1-B0</Tplnr>\n" +
-            "                    <Pltxt>炼胶分公司-B区</Pltxt>\n" +
-            "                    <Boeq>否</Boeq>\n" +
-            "                    <Rtime>0</Rtime>\n" +
-            "                    <Swerk>A001</Swerk>\n" +
-            "                    <Txtmd>贵州轮胎股份有限公司</Txtmd>\n" +
-            "                    <Anlnr/>\n" +
-            "                    <Abckz>3</Abckz>\n" +
-            "                    <Abctx>B类设备</Abctx>\n" +
-            "                </item>\n" +
-            "            </EtData>\n" +
-            "            <MType>S</MType>\n" +
-            "            <Message>查询成功</Message>\n" +
-            "        </n0:ZpmSearchEqunrResponse>\n" +
-            "    </soap-env:Body>\n" +
-            "</soap-env:Envelope>";
-        parseDeviceXml(resXml);*/
-
-        String xml = "<soap-env:Envelope xmlns:soap-env=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-            "    <soap-env:Header/>\n" +
-            "    <soap-env:Body>\n" +
-            "        <n0:ZpmImportEqunrResponse xmlns:n0=\"urn:sap-com:document:sap:soap:functions:mc-style\">\n" +
-            "            <ItData>\n" +
-            "                <item>\n" +
-            "                    <Pernr>10000001</Pernr>\n" +
-            "                    <Equnr>A1-A0-001MLJ-01</Equnr>\n" +
-            "                    <Sdate>20191212</Sdate>\n" +
-            "                    <Stime>1254</Stime>\n" +
-            "                    <Edate>20191213</Edate>\n" +
-            "                    <Etime>1254</Etime>\n" +
-            "                    <Message/>\n" +
-            "                </item>\n" +
-            "            </ItData>\n" +
-            "            <MType>S</MType>\n" +
-            "            <Message>上传成功</Message>\n" +
-            "        </n0:ZpmImportEqunrResponse>\n" +
-            "    </soap-env:Body>\n" +
-            "</soap-env:Envelope>";
-        try {
-            Document document = DocumentHelper.parseText(xml);
-            DefaultXPath xpath = new DefaultXPath("//Message");
-            List list = xpath.selectNodes(document);
-            Iterator iterator = list.iterator();
-            while (iterator.hasNext()) {
-                Element node = (Element) iterator.next();
-                log.info("node: {}", node.getText());
-            }
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        }
-    }
-
     private static Boolean checkImportResult(String xml) {
         try {
             Document document = DocumentHelper.parseText(xml);
@@ -252,6 +126,7 @@ public class BottleneckService {
         HttpEntity<String> request = new HttpEntity<>(xml, headers);
         ResponseEntity<String> entity = restTemplate.exchange(uri, HttpMethod.POST, request, String.class);
         String resXml = entity.getBody();
+        log.info("resXml: {}", resXml);
         Boolean result = checkImportResult(resXml);
         log.info("import result: {}", result);
         return result;
@@ -259,6 +134,7 @@ public class BottleneckService {
 
     /**
      * 根据工号查找设备台账
+     *
      * @param userCode 工号
      * @return 设备台账列表
      * @throws URISyntaxException URISyntaxException

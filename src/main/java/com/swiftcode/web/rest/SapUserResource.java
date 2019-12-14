@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,15 +56,31 @@ public class SapUserResource {
         List<SapUser> list = service.findAll();
         return CommonResult.success(list);
     }
+
     @ApiOperation("SAP USER 是否存在")
     @GetMapping("/exist/{userCode}")
     public ResponseEntity<Map<String, Boolean>> isExist(@PathVariable String userCode) {
         Map<String, Boolean> result = new HashMap<>();
         result.put("isExist", service.isExist(userCode));
         return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @ApiOperation("重置密码")
     @PutMapping("/users/{userCode}/reset")
     public CommonResult<Void> resetPassword(@PathVariable("userCode") String userCode) {
         service.resetPassword(userCode);
         return CommonResult.success(null, "密码重置成功");
+    }
+
+    @ApiOperation("释放维修人员")
+    @PutMapping("/users/{userCode}/release")
+    public CommonResult<Boolean> releaseUser(@PathVariable("userCode") String userCode) {
+        try {
+            boolean rst = service.releaseUser(userCode);
+            return CommonResult.success(rst);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException("释放人员出错");
+        }
     }
 }
