@@ -6,6 +6,7 @@ import com.swiftcode.repository.SapUserRepository;
 import com.swiftcode.service.dto.SapUserDTO;
 import com.swiftcode.service.mapper.SapUserMapper;
 import com.swiftcode.web.rest.vm.ManagedSapUserVm;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,6 +59,7 @@ public class SapUserService {
     }
 
     @Transactional(rollbackFor = Exception.class, readOnly = true)
+    @Modifying
     public SapUserDTO findByUserCode(String userCode) {
         SapUser sapUser = repository.findByUserCode(userCode).orElse(new SapUser());
         return mapper.toDto(sapUser);

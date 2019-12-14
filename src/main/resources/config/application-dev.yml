@@ -41,7 +41,7 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://139.224.62.102:3306/spaAdmin?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC
+    url: jdbc:mysql://192.168.6.212:3306/spaAdmin?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC
     username: root
     password: N&rTJYH{e[M37mnepk
     hikari:
@@ -136,4 +136,4 @@ jhipster:
 #file:
 #  upload-dir: /Users/ruizhaohui/devFolder/application/sap/uploads
 
-sap-url: http://GYTSAP004.gztyre.com:8000
+sap-url: http://192.168.6.37:8000
