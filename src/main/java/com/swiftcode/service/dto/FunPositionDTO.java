@@ -17,9 +17,11 @@ public class FunPositionDTO implements Serializable {
     private static final long serialVersionUID = 6407933089387949428L;
     private Long id;
     @ApiModelProperty(value = "父节点ID")
-    private Long parentId;
-    @ApiModelProperty(value = "员工工号")
-    private String userCode;
+    private String parentId;
+    @ApiModelProperty(value = "分公司编码")
+    private String branchCompanyCode;
+    @ApiModelProperty(value = "分公司名称")
+    private String branchCompanyName;
     @ApiModelProperty(value = "功能位置编码")
     private String positionCode;
     @ApiModelProperty(value = "功能位置名称")

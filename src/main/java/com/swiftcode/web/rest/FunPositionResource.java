@@ -29,10 +29,10 @@ public class FunPositionResource {
         return CommonResult.success(position, "添加成功");
     }
 
-    @GetMapping("/positions")
+    @GetMapping("/positions/{userCode}")
     @ApiOperation("查找功能位置，返回树形结构")
-    public CommonResult<List<FunPositionDTO>> findPositions() {
-        List<FunPositionDTO> positions = service.findPositions();
+    public CommonResult<List<FunPositionDTO>> findPositions(@PathVariable("userCode") String userCode) {
+        List<FunPositionDTO> positions = service.findPositions(userCode);
         return CommonResult.success(positions, "查找成功");
     }
 }
