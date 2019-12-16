@@ -2,8 +2,10 @@ package com.swiftcode.service;
 
 import com.google.common.collect.Lists;
 import com.swiftcode.domain.FunPosition;
+import com.swiftcode.domain.SapUser;
 import com.swiftcode.repository.DeviceRepository;
 import com.swiftcode.repository.FunPositionRepository;
+import com.swiftcode.repository.SapUserRepository;
 import com.swiftcode.service.dto.DeviceDTO;
 import com.swiftcode.service.dto.FunPositionDTO;
 import com.swiftcode.service.mapper.DeviceMapper;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -25,12 +28,14 @@ public class FunPositionService {
     private FunPositionMapper mapper;
     private DeviceRepository deviceRepository;
     private DeviceMapper deviceMapper;
+    private SapUserRepository sapUserRepository;
 
-    public FunPositionService(FunPositionRepository repository, FunPositionMapper mapper, DeviceRepository deviceRepository, DeviceMapper deviceMapper) {
+    public FunPositionService(FunPositionRepository repository, FunPositionMapper mapper, DeviceRepository deviceRepository, DeviceMapper deviceMapper, SapUserRepository sapUserRepository) {
         this.repository = repository;
         this.mapper = mapper;
         this.deviceRepository = deviceRepository;
         this.deviceMapper = deviceMapper;
+        this.sapUserRepository = sapUserRepository;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -44,40 +49,46 @@ public class FunPositionService {
      *
      * @return 功能位置列表
      */
-    public List<FunPositionDTO> findPositions() {
-        List<FunPosition> allPositions = repository.findAll();
-        List<FunPositionDTO> allDtos = allPositions
-            .stream()
-            .map(position -> mapper.toDto(position))
-            .collect(Collectors.toList());
-        List<FunPositionDTO> root = Lists.newArrayList();
+    public List<FunPositionDTO> findPositions(String userCode) {
+        Optional<SapUser> optional = sapUserRepository.findByUserCode(userCode);
+        if (optional.isPresent()) {
+            SapUser sapUser = optional.get();
+            String branchCode = sapUser.getBranchCode();
+            List<FunPosition> allPositions = repository.findAllByBranchCompanyCode(branchCode);
+            List<FunPositionDTO> allDtos = allPositions
+                .stream()
+                .map(position -> mapper.toDto(position))
+                .collect(Collectors.toList());
+            List<FunPositionDTO> root = Lists.newArrayList();
 
-        for (FunPosition position : allPositions) {
-            if (position.getParentId() == 0) {
-                FunPositionDTO dto = mapper.toDto(position);
-                List<DeviceDTO> deviceList = deviceRepository.findByPositionId(dto.getId())
-                    .stream()
-                    .map(device -> deviceMapper.toDto(device))
-                    .collect(Collectors.toList());
-                // 默认展示第一层设备
-                dto.setDeviceChildren(deviceList);
-                root.add(dto);
+            for (FunPosition position : allPositions) {
+                if (position.getParentId().equals("0")) {
+                    FunPositionDTO dto = mapper.toDto(position);
+                    List<DeviceDTO> deviceList = deviceRepository.findByPositionCode(dto.getPositionCode())
+                        .stream()
+                        .map(device -> deviceMapper.toDto(device))
+                        .collect(Collectors.toList());
+                    // 默认展示第一层设备
+                    dto.setDeviceChildren(deviceList);
+                    root.add(dto);
+                }
             }
-        }
 
-        for (FunPositionDTO dto : root) {
-            List<FunPositionDTO> childList = getChild(dto.getId(), allDtos);
-            dto.setChildren(childList);
-        }
+            for (FunPositionDTO dto : root) {
+                List<FunPositionDTO> childList = getChild(dto.getPositionCode(), allDtos);
+                dto.setChildren(childList);
+            }
 
-        return root;
+            return root;
+        }
+        return Lists.newArrayListWithExpectedSize(0);
     }
 
-    private List<FunPositionDTO> getChild(Long id, List<FunPositionDTO> allDtos) {
+    private List<FunPositionDTO> getChild(String id, List<FunPositionDTO> allDtos) {
         List<FunPositionDTO> childList = Lists.newArrayList();
         for (FunPositionDTO dto : allDtos) {
             if (dto.getParentId().equals(id)) {
-                List<DeviceDTO> deviceList = deviceRepository.findByPositionId(dto.getId())
+                List<DeviceDTO> deviceList = deviceRepository.findByPositionCode(dto.getPositionCode())
                     .stream()
                     .map(device -> deviceMapper.toDto(device))
                     .collect(Collectors.toList());
@@ -88,7 +99,7 @@ public class FunPositionService {
         }
 
         for (FunPositionDTO dto : childList) {
-            dto.setChildren(getChild(dto.getId(), allDtos));
+            dto.setChildren(getChild(dto.getPositionCode(), allDtos));
         }
 
         if (childList.size() == 0) {

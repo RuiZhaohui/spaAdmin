@@ -12,8 +12,8 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     /**
      * 根据功能位置ID查找设备列表
      *
-     * @param positionId 功能位置ID
+     * @param positionCode 功能位置编码
      * @return 设备列表
      */
-    List<Device> findByPositionId(Long positionId);
+    List<Device> findByPositionCode(String positionCode);
 }
