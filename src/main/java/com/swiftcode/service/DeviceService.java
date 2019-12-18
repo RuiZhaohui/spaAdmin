@@ -42,23 +42,23 @@ public class DeviceService {
         if (optional.isPresent()) {
             DeviceDTO rootDto = mapper.toDto(optional.get());
 
-            List<DeviceDTO> childList = getChild(rootDto.getId(), allDtos);
+            List<DeviceDTO> childList = getChild(rootDto.getDeviceCode(), allDtos);
             rootDto.setChildren(childList);
             return rootDto;
         }
         return null;
     }
 
-    private List<DeviceDTO> getChild(Long id, List<DeviceDTO> allDtos) {
+    private List<DeviceDTO> getChild(String deviceCode, List<DeviceDTO> allDtos) {
         List<DeviceDTO> childList = Lists.newArrayList();
         for (DeviceDTO dto : allDtos) {
-            if (dto.getParentId().equals(id)) {
+            if (dto.getParentCode().equals(deviceCode)) {
                 childList.add(dto);
             }
         }
 
         for (DeviceDTO dto : childList) {
-            dto.setChildren(getChild(dto.getId(), allDtos));
+            dto.setChildren(getChild(dto.getDeviceCode(), allDtos));
         }
 
         if (childList.size() == 0) {
