@@ -133,7 +133,7 @@ jhipster:
 # ===================================================================
 
 # application:
-#file:
-#  upload-dir: /Users/ruizhaohui/devFolder/application/sap/uploads
+file:
+  upload-dir: /Users/ruizhaohui/devFolder/application/sap/uploads
 
 sap-url: http://192.168.6.37:8000
