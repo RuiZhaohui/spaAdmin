@@ -7,6 +7,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URISyntaxException;
 import java.util.List;
 
 /**
@@ -34,5 +35,16 @@ public class FunPositionResource {
     public CommonResult<List<FunPositionDTO>> findPositions(@PathVariable("userCode") String userCode) {
         List<FunPositionDTO> positions = service.findPositions(userCode);
         return CommonResult.success(positions, "查找成功");
+    }
+
+    @ApiOperation("手动同步接口")
+    @GetMapping("/positions/sync")
+    public CommonResult<Void> syncPositionsAndDevices() {
+        try {
+            service.syncPositionsAndDevices();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return CommonResult.success(null);
     }
 }

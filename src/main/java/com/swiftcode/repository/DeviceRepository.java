@@ -4,6 +4,7 @@ import com.swiftcode.domain.Device;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author chen
@@ -16,4 +17,6 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
      * @return 设备列表
      */
     List<Device> findByPositionCode(String positionCode);
+
+    Optional<Device> findByDeviceCode(String deviceCode);
 }

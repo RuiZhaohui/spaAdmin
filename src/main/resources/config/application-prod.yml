@@ -149,3 +149,8 @@ jhipster:
 # ===================================================================
 
 # application:
+sap-url: http://pmapp.gztyre.com:8000
+jpush:
+  appKey: ac58b959ac802cd39ed20fbb
+  masterSecret: 84497fd9b6de9af2b1ddc4e5
+  apnsProduction: false

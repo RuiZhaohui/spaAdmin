@@ -1,6 +1,7 @@
 package com.swiftcode.service;
 
 import com.google.common.collect.Lists;
+import com.swiftcode.config.Constants;
 import com.swiftcode.domain.Device;
 import com.swiftcode.domain.FunPosition;
 import com.swiftcode.domain.SapUser;
@@ -10,10 +11,20 @@ import com.swiftcode.repository.SapUserRepository;
 import com.swiftcode.service.dto.DeviceDTO;
 import com.swiftcode.service.dto.FunPositionDTO;
 import com.swiftcode.service.mapper.FunPositionMapper;
+import com.swiftcode.service.util.SapXmlUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.dom4j.*;
+import org.dom4j.xpath.DefaultXPath;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,6 +37,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class FunPositionService {
+    @Value("${sap-url}")
+    private String sapUrl;
+
     private FunPositionRepository repository;
     private FunPositionMapper mapper;
     private DeviceRepository deviceRepository;
@@ -36,6 +50,89 @@ public class FunPositionService {
         this.mapper = mapper;
         this.deviceRepository = deviceRepository;
         this.sapUserRepository = sapUserRepository;
+    }
+
+    private static List<FunPosition> parsePositions(String rexXml) {
+        List<FunPosition> positions = Lists.newArrayList();
+        try {
+            Document document = DocumentHelper.parseText(rexXml);
+            DefaultXPath xPath = new DefaultXPath("//EtData");
+            xPath.setNamespaceURIs(Collections.singletonMap("n0", "urn:sap-com:document:sap:soap:functions:mc-style"));
+            List<Node> list = xPath.selectNodes(document);
+            for (Object o : list) {
+                Element itemNode = (Element) o;
+                List<Element> items = itemNode.elements();
+                for (Element item : items) {
+                    FunPosition entity = new FunPosition();
+                    List<Element> elements = item.elements();
+                    for (Element element : elements) {
+                        if (element.getName().equalsIgnoreCase("TPLMA")) {
+                            String parentCode;
+                            if (element.getText().isEmpty()) {
+                                parentCode = "0";
+                            } else {
+                                parentCode = element.getText();
+                            }
+                            entity.setParentId(parentCode);
+                        } else if (element.getName().equalsIgnoreCase("TPLNR")) {
+                            entity.setPositionCode(element.getText());
+                        } else if (element.getName().equalsIgnoreCase("PLTXT")) {
+                            entity.setPositionName(element.getText());
+                        } else if (element.getName().equalsIgnoreCase("MATYP")) {
+                            entity.setBranchCompanyCode(element.getText());
+                        } else if (element.getName().equalsIgnoreCase("MATYT")) {
+                            entity.setBranchCompanyName(element.getText());
+                        }
+                    }
+                    positions.add(entity);
+                }
+            }
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
+        return positions;
+    }
+
+    private static List<Device> parseDevices(String resXml) {
+        List<Device> devices = Lists.newArrayList();
+        try {
+            Document document = DocumentHelper.parseText(resXml);
+            DefaultXPath xPath = new DefaultXPath("//EtData1");
+            xPath.setNamespaceURIs(Collections.singletonMap("n0", "urn:sap-com:document:sap:soap:functions:mc-style"));
+            List<Node> list = xPath.selectNodes(document);
+            for (Object object : list) {
+                Element itemNode = (Element) object;
+                List<Element> items = itemNode.elements();
+                for (Element item : items) {
+                    Device entity = new Device();
+                    List<Element> elements = item.elements();
+                    for (Element element : elements) {
+                        if (element.getName().equalsIgnoreCase("HEQUI")) {
+                            String parentCode;
+                            if (element.getText().isEmpty()) {
+                                parentCode = "0";
+                            } else {
+                                parentCode = element.getText();
+                            }
+                            entity.setParentCode(parentCode);
+                        }
+                        if (element.getName().equalsIgnoreCase("EQUNR")) {
+                            entity.setDeviceCode(element.getText());
+                        }
+                        if (element.getName().equalsIgnoreCase("EQKTX")) {
+                            entity.setDeviceName(element.getText());
+                        }
+                        if (element.getName().equalsIgnoreCase("TPLNR")) {
+                            entity.setPositionCode(element.getText());
+                        }
+                    }
+                    devices.add(entity);
+                }
+            }
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
+        return devices;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -135,5 +232,41 @@ public class FunPositionService {
             return Lists.newArrayList();
         }
         return childList;
+    }
+
+    /**
+     * 获取功能位置和对应的设备
+     *
+     * @throws URISyntaxException URISyntaxException
+     */
+    @Scheduled(cron = "0 0 0 * * ?")
+    @Transactional(rollbackFor = Exception.class)
+    public void syncPositionsAndDevices() throws URISyntaxException {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("authorization", Constants.AUTH_CODE);
+        headers.setContentType(MediaType.TEXT_XML);
+        String url = sapUrl + "/sap/bc/srt/rfc/sap/zpm_search_tplnr_new/888/zpm_search_tplnr_new/zpm_search_tplnr_new";
+        URI uri = new URI(url);
+        String xml = SapXmlUtil.buildGetPositionAndDeviceXml();
+
+        HttpEntity<String> request = new HttpEntity<>(xml, headers);
+        ResponseEntity<String> entity = restTemplate.exchange(uri, HttpMethod.POST, request, String.class);
+        String resXml = entity.getBody();
+        List<FunPosition> positions = parsePositions(resXml);
+        List<Device> devices = parseDevices(resXml);
+        for (FunPosition position : positions) {
+            Optional<FunPosition> optional = repository.findByPositionCode(position.getPositionCode());
+            if (!optional.isPresent()) {
+                repository.save(position);
+            }
+        }
+
+        for (Device device : devices) {
+            Optional<Device> optional = deviceRepository.findByDeviceCode(device.getDeviceCode());
+            if (!optional.isPresent()) {
+                deviceRepository.save(device);
+            }
+        }
     }
 }
