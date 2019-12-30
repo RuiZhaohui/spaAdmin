@@ -55,10 +55,10 @@ public class FunPositionService {
 
             List<Device> devices = deviceRepository.findAll();
             List<DeviceDTO> allDeviceDto = devices.stream()
-                .map(device -> new DeviceDTO(device.getId(), device.getParentCode(), device.getPositionCode(), device.getDeviceCode(), device.getDeviceName(), Lists.newArrayListWithCapacity(0))).collect(Collectors.toList());
+                .map(device -> new DeviceDTO(device.getId(), device.getParentCode().trim(), device.getPositionCode().trim(), device.getDeviceCode().trim(), device.getDeviceName(), Lists.newArrayListWithCapacity(0))).collect(Collectors.toList());
 
             SapUser sapUser = optional.get();
-            String branchCode = sapUser.getBranchCode();
+            String branchCode = sapUser.getBranchCode().trim();
             List<FunPosition> allPositions = repository.findAllByBranchCompanyCode(branchCode);
             List<FunPositionDTO> allDtos = allPositions
                 .stream()
@@ -67,14 +67,14 @@ public class FunPositionService {
             List<FunPositionDTO> root = Lists.newArrayList();
 
             for (FunPosition position : allPositions) {
-                if (position.getParentId().equals("0")) {
+                if ("0".equals(position.getParentId())) {
                     FunPositionDTO dto = mapper.toDto(position);
                     root.add(dto);
                 }
             }
 
             for (FunPositionDTO dto : root) {
-                List<FunPositionDTO> childList = getChild(dto.getPositionCode(), allDtos, allDeviceDto);
+                List<FunPositionDTO> childList = getChild(dto.getPositionCode().trim(), allDtos, allDeviceDto);
                 dto.setChildren(childList);
             }
 
@@ -86,13 +86,13 @@ public class FunPositionService {
     private List<DeviceDTO> getDeviceChild(String deviceCode, List<DeviceDTO> allDtos) {
         List<DeviceDTO> childList = Lists.newArrayList();
         for (DeviceDTO dto : allDtos) {
-            if (dto.getParentCode().equals(deviceCode)) {
+            if (dto.getParentCode().trim().equalsIgnoreCase(deviceCode)) {
                 childList.add(dto);
             }
         }
 
         for (DeviceDTO dto : childList) {
-            dto.setChildren(getDeviceChild(dto.getDeviceCode(), allDtos));
+            dto.setChildren(getDeviceChild(dto.getDeviceCode().trim(), allDtos));
         }
 
         if (childList.size() == 0) {
@@ -104,13 +104,13 @@ public class FunPositionService {
     private List<FunPositionDTO> getChild(String positionCode, List<FunPositionDTO> allDtos, List<DeviceDTO> allDeviceDto) {
         List<FunPositionDTO> childList = Lists.newArrayList();
         for (FunPositionDTO dto : allDtos) {
-            if (dto.getParentId().equals(positionCode)) {
-                List<DeviceDTO> deviceOfPosition = deviceRepository.findByPositionCode(dto.getPositionCode()).stream()
-                    .map(device -> new DeviceDTO(device.getId(), device.getParentCode(), device.getPositionCode(), device.getDeviceCode(), device.getDeviceName(), Lists.newArrayListWithCapacity(0))).collect(Collectors.toList());
+            if (dto.getParentId().equalsIgnoreCase(positionCode)) {
+                List<DeviceDTO> deviceOfPosition = deviceRepository.findByPositionCode(dto.getPositionCode().trim()).stream()
+                    .map(device -> new DeviceDTO(device.getId(), device.getParentCode().trim(), device.getPositionCode().trim(), device.getDeviceCode().trim(), device.getDeviceName(), Lists.newArrayListWithCapacity(0))).collect(Collectors.toList());
 
                 List<DeviceDTO> rootDeviceDto = Lists.newArrayList();
                 for (DeviceDTO deviceDTO : deviceOfPosition) {
-                    if (deviceDTO.getParentCode().isEmpty()) {
+                    if (deviceDTO.getParentCode().isEmpty() || "0".equals(deviceDTO.getParentCode())) {
                         rootDeviceDto.add(deviceDTO);
                     }
                 }
@@ -118,7 +118,7 @@ public class FunPositionService {
 
                 List<DeviceDTO> deviceChildren = Lists.newArrayList();
                 for (DeviceDTO deviceDTO : rootDeviceDto) {
-                    List<DeviceDTO> deviceChild = getDeviceChild(deviceDTO.getDeviceCode(), allDeviceDto);
+                    List<DeviceDTO> deviceChild = getDeviceChild(deviceDTO.getDeviceCode().trim(), allDeviceDto);
                     deviceDTO.setChildren(deviceChild);
                     deviceChildren.add(deviceDTO);
                 }
@@ -128,7 +128,7 @@ public class FunPositionService {
         }
 
         for (FunPositionDTO dto : childList) {
-            dto.setChildren(getChild(dto.getPositionCode(), allDtos, allDeviceDto));
+            dto.setChildren(getChild(dto.getPositionCode().trim(), allDtos, allDeviceDto));
         }
 
         if (childList.size() == 0) {

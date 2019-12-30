@@ -33,6 +33,8 @@ import java.util.List;
 public class SapUserService {
     @Value("${sap-url}")
     private String sapUrl;
+    @Value("${sap-secret}")
+    private String sapSecret;
     private SapUserRepository repository;
     private SapUserMapper mapper;
     private PasswordEncoder passwordEncoder;
@@ -79,7 +81,7 @@ public class SapUserService {
     public boolean releaseUser(String userCode) throws URISyntaxException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.add("authorization", Constants.AUTH_CODE);
+        headers.add("authorization", sapSecret);
         headers.setContentType(MediaType.TEXT_XML);
 
         String url = sapUrl + "/sap/bc/srt/rfc/sap/zpm_release_pernr/888/zpm_release_pernr/zpm_release_pernr";

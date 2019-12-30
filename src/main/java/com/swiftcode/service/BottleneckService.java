@@ -35,6 +35,8 @@ public class BottleneckService {
 
     @Value("${sap-url}")
     private String sapUrl;
+    @Value("${sap-secret}")
+    private String sapSecret;
 
     private static Boolean checkImportResult(String xml) {
         try {
@@ -116,7 +118,7 @@ public class BottleneckService {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new MyErrorHandle());
         HttpHeaders headers = new HttpHeaders();
-        headers.add("authorization", Constants.AUTH_CODE);
+        headers.add("authorization", sapSecret);
         headers.setContentType(MediaType.TEXT_XML);
 
         String url = sapUrl + "/sap/bc/srt/rfc/sap/zpm_import_equnr/888/zpm_import_equnr/zpm_import_equnr";
@@ -142,7 +144,7 @@ public class BottleneckService {
     public List<UserDeviceDTO> findUserDevices(String userCode) throws URISyntaxException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.add("authorization", Constants.AUTH_CODE);
+        headers.add("authorization", sapSecret);
         headers.setContentType(MediaType.TEXT_XML);
 
         String url = sapUrl + "/sap/bc/srt/rfc/sap/zpm_search_equnr/888/zpm_search_equnr/zpm_search_equnr";

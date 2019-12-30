@@ -21,7 +21,7 @@ logging:
 
 spring:
   profiles:
-    active: dev
+    active: prod
     include:
       - swagger
       # Uncomment to activate TLS for the dev profile
@@ -41,7 +41,7 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://192.168.6.212:3306/spaAdmin?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC
+    url: jdbc:mysql://192.168.6.212:3306/sapTest?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC
     username: root
     password: N&rTJYH{e[M37mnepk
     hikari:
@@ -78,7 +78,7 @@ spring:
     cache: false
 
 server:
-  port: 8080
+  port: 8070
 
 # ===================================================================
 # JHipster specific properties
@@ -108,7 +108,7 @@ jhipster:
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000
   mail: # specific JHipster mail property, for standard properties see MailProperties
-    base-url: http://127.0.0.1:8080
+    base-url: http://127.0.0.1:8070
   metrics:
     logs: # Reports metrics in the logs
       enabled: false
@@ -133,10 +133,11 @@ jhipster:
 # ===================================================================
 
 # application:
-file:
-  upload-dir: /Users/ruizhaohui/devFolder/application/sap/uploads
+#file:
+#  upload-dir: /Users/ruizhaohui/devFolder/application/sap/uploads
 
-sap-url: http://192.168.6.37:8000
+sap-url: http://61.159.128.211:8005
+sap-secret: Basic RGV2MDM6MTIzNDU2
 jpush:
   appKey: ac58b959ac802cd39ed20fbb
   masterSecret: 84497fd9b6de9af2b1ddc4e5
