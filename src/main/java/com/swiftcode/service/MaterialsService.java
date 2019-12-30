@@ -30,6 +30,8 @@ import java.util.Optional;
 public class MaterialsService {
     @Value("${sap-url}")
     private String sapUrl;
+    @Value("${sap-secret}")
+    private String sapSecret;
 
     private MaterialsRepository repository;
 
@@ -97,7 +99,7 @@ public class MaterialsService {
     public void syncMaterials() throws URISyntaxException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.add("authorization", Constants.AUTH_CODE);
+        headers.add("authorization", sapSecret);
         headers.setContentType(MediaType.TEXT_XML);
         String url = sapUrl + "/sap/bc/srt/rfc/sap/zpm_search_matnr/888/zpm_search_matnr/zpm_search_matnr";
         URI uri = new URI(url);

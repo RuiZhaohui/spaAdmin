@@ -20,12 +20,12 @@ logging:
     com.swiftcode: DEBUG
 
 spring:
-  profiles:
-    active: prod
-    include:
-      - swagger
-      # Uncomment to activate TLS for the dev profile
-      #- tls
+#  profiles:
+#    active: prod
+#    include:
+#      - swagger
+#      # Uncomment to activate TLS for the dev profile
+#      #- tls
 
   servlet:
     multipart:

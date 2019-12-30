@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
 public class FunPositionService {
     @Value("${sap-url}")
     private String sapUrl;
+    @Value("${sap-secret}")
+    private String sapSecret;
 
     private FunPositionRepository repository;
     private FunPositionMapper mapper;
@@ -244,7 +246,7 @@ public class FunPositionService {
     public void syncPositionsAndDevices() throws URISyntaxException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.add("authorization", Constants.AUTH_CODE);
+        headers.add("authorization", sapSecret);
         headers.setContentType(MediaType.TEXT_XML);
         String url = sapUrl + "/sap/bc/srt/rfc/sap/zpm_search_tplnr_new/888/zpm_search_tplnr_new/zpm_search_tplnr_new";
         URI uri = new URI(url);
