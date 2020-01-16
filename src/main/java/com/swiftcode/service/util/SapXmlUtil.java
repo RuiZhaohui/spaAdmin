@@ -106,4 +106,20 @@ public class SapXmlUtil {
             "    </Body>\n" +
             "</Envelope>";
     }
+
+    /**
+     * 同步订单
+     *
+     * @return xml
+     */
+    public static String buildOrderXml() {
+        return "<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
+            "    <Body>\n" +
+            "        <ZpmExportOrder xmlns=\"urn:sap-com:document:sap:soap:functions:mc-style\">\n" +
+            "            <EtData xmlns=\"\">\n" +
+            "            </EtData>\n" +
+            "        </ZpmExportOrder>\n" +
+            "    </Body>\n" +
+            "</Envelope>";
+    }
 }

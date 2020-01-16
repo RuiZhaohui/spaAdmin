@@ -7,6 +7,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,5 +59,16 @@ public class MalfunctionResource {
     public CommonResult<List<MalfunctionDTO>> findByUser(@PathVariable("userCode") String userCode) {
         List<MalfunctionDTO> list = service.findByUser(userCode);
         return CommonResult.success(list, "查询成功");
+    }
+
+    @ApiOperation("手动同步接口")
+    @GetMapping("/malfunction/sync")
+    public CommonResult<Void> syncPositionsAndDevices() {
+        try {
+            service.syncOrders();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return CommonResult.success(null);
     }
 }
