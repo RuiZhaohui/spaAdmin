@@ -3,6 +3,7 @@ package com.swiftcode.service;
 import com.swiftcode.config.Constants;
 import com.swiftcode.domain.SapUser;
 import com.swiftcode.repository.SapUserRepository;
+import com.swiftcode.repository.SapUserSpecification;
 import com.swiftcode.service.dto.SapUserDTO;
 import com.swiftcode.service.mapper.SapUserMapper;
 import com.swiftcode.service.util.SapXmlUtil;
@@ -23,7 +24,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author chen
@@ -113,6 +116,11 @@ public class SapUserService {
     public SapUserDTO findByUserCode(String userCode) {
         SapUser sapUser = repository.findByUserCode(userCode).orElse(new SapUser());
         return mapper.toDto(sapUser);
+    }
+
+    @Transactional(rollbackFor = Exception.class, readOnly = true)
+    public List<SapUser> searchUser(String userCode, String userName) {
+        return new ArrayList<>(repository.findAll(SapUserSpecification.search(userCode, userName)));
     }
 
     @Transactional(rollbackFor = Exception.class, readOnly = true)

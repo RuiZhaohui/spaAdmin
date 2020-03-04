@@ -1,12 +1,14 @@
 package com.swiftcode.service;
 
-import com.google.common.collect.Lists;
 import com.swiftcode.config.Constants;
 import com.swiftcode.domain.Materials;
 import com.swiftcode.repository.MaterialsRepository;
 import com.swiftcode.service.util.SapXmlUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.dom4j.*;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
 import org.dom4j.xpath.DefaultXPath;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -21,6 +23,7 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author chen
@@ -39,43 +42,36 @@ public class MaterialsService {
         this.repository = repository;
     }
 
-    private static List<Materials> parseMaterials(String resXml) {
-        List<Materials> materialsList = Lists.newArrayList();
-        try {
-            Document document = DocumentHelper.parseText(resXml);
-            DefaultXPath xPath = new DefaultXPath("//EtData");
-            xPath.setNamespaceURIs(Collections.singletonMap("n0", "urn:sap-com:document:sap:soap:functions:mc-style"));
-            List<Node> list = xPath.selectNodes(document);
-            for (Object object : list) {
-                Element itemNode = (Element) object;
-                List<Element> items = itemNode.elements();
-                for (Element item : items) {
-                    Materials entity = new Materials();
-                    List<Element> elements = item.elements();
-                    for (Element element : elements) {
-                        if (element.getName().equalsIgnoreCase("MATNR")) {
-                            entity.setMaterialsCode(element.getText());
-                        }
-                        if (element.getName().equalsIgnoreCase("MAKTX")) {
-                            entity.setMaterialsName(element.getText());
-                        }
-                        if (element.getName().equalsIgnoreCase("WERKS")) {
-                            entity.setFactoryCode(element.getText());
-                        }
-                        if (element.getName().equalsIgnoreCase("NAME")) {
-                            entity.setFactoryName(element.getText());
-                        }
-                        if (element.getName().equalsIgnoreCase("MEINS")) {
-                            entity.setUnit(element.getText());
-                        }
+    private static List<Materials> parseMaterials(String resXml) throws DocumentException {
+        Document document = DocumentHelper.parseText(resXml);
+        DefaultXPath xPath = new DefaultXPath("//EtData");
+        xPath.setNamespaceURIs(Collections.singletonMap("n0", "urn:sap-com:document:sap:soap:functions:mc-style"));
+        return xPath.selectNodes(document).stream()
+            .flatMap(itemNode -> ((Element) itemNode).elements().stream())
+            .map(node -> {
+                List<Element> items = node.elements();
+                Materials entity = new Materials();
+                items.forEach(element -> {
+                    if (element.getName().equalsIgnoreCase("MATNR")) {
+                        entity.setMaterialsCode(element.getText());
                     }
-                    materialsList.add(entity);
-                }
-            }
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        }
-        return materialsList;
+                    if (element.getName().equalsIgnoreCase("MAKTX")) {
+                        entity.setMaterialsName(element.getText());
+                    }
+                    if (element.getName().equalsIgnoreCase("WERKS")) {
+                        entity.setFactoryCode(element.getText());
+                    }
+                    if (element.getName().equalsIgnoreCase("NAME")) {
+                        entity.setFactoryName(element.getText());
+                    }
+                    if (element.getName().equalsIgnoreCase("MEINS")) {
+                        entity.setUnit(element.getText());
+                    }
+                });
+                return entity;
+            })
+            .collect(Collectors.toList());
+
     }
 
     /**
@@ -108,11 +104,23 @@ public class MaterialsService {
         HttpEntity<String> request = new HttpEntity<>(xml, headers);
         ResponseEntity<String> entity = restTemplate.exchange(uri, HttpMethod.POST, request, String.class);
         String resXml = entity.getBody();
-        List<Materials> materialsList = parseMaterials(resXml);
-        for (Materials materials : materialsList) {
-            Optional<Materials> optional = repository.findByMaterialsCode(materials.getMaterialsCode());
-            if (!optional.isPresent()) {
-                repository.save(materials);
+
+        List<Materials> materialsList = null;
+        try {
+            materialsList = parseMaterials(resXml);
+        } catch (DocumentException e) {
+            try {
+                materialsList = parseMaterials(resXml);
+            } catch (DocumentException ex) {
+                log.error("同步物料数据出错: {}", ex.getMessage());
+            }
+        }
+        if (null != materialsList) {
+            for (Materials materials : materialsList) {
+                Optional<Materials> optional = repository.findByMaterialsCode(materials.getMaterialsCode());
+                if (!optional.isPresent()) {
+                    repository.save(materials);
+                }
             }
         }
     }

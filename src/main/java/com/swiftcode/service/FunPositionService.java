@@ -13,7 +13,10 @@ import com.swiftcode.service.dto.FunPositionDTO;
 import com.swiftcode.service.mapper.FunPositionMapper;
 import com.swiftcode.service.util.SapXmlUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.dom4j.*;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
 import org.dom4j.xpath.DefaultXPath;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -54,87 +57,77 @@ public class FunPositionService {
         this.sapUserRepository = sapUserRepository;
     }
 
-    private static List<FunPosition> parsePositions(String rexXml) {
-        List<FunPosition> positions = Lists.newArrayList();
-        try {
-            Document document = DocumentHelper.parseText(rexXml);
-            DefaultXPath xPath = new DefaultXPath("//EtData");
-            xPath.setNamespaceURIs(Collections.singletonMap("n0", "urn:sap-com:document:sap:soap:functions:mc-style"));
-            List<Node> list = xPath.selectNodes(document);
-            for (Object o : list) {
-                Element itemNode = (Element) o;
-                List<Element> items = itemNode.elements();
-                for (Element item : items) {
-                    FunPosition entity = new FunPosition();
-                    List<Element> elements = item.elements();
-                    for (Element element : elements) {
-                        if (element.getName().equalsIgnoreCase("TPLMA")) {
-                            String parentCode;
-                            if (element.getText().isEmpty()) {
-                                parentCode = "0";
-                            } else {
-                                parentCode = element.getText();
-                            }
-                            entity.setParentId(parentCode);
-                        } else if (element.getName().equalsIgnoreCase("TPLNR")) {
-                            entity.setPositionCode(element.getText());
-                        } else if (element.getName().equalsIgnoreCase("PLTXT")) {
-                            entity.setPositionName(element.getText());
-                        } else if (element.getName().equalsIgnoreCase("MATYP")) {
-                            entity.setBranchCompanyCode(element.getText());
-                        } else if (element.getName().equalsIgnoreCase("MATYT")) {
-                            entity.setBranchCompanyName(element.getText());
-                        }
+    /**
+     * 解析功能位置
+     *
+     * @param resXml resXml
+     * @return 功能位置列表
+     * @throws DocumentException DocumentException
+     */
+    private static List<FunPosition> parsePositions(String resXml) throws DocumentException {
+        Document document = DocumentHelper.parseText(resXml);
+        DefaultXPath xPath = new DefaultXPath("//EtData");
+        xPath.setNamespaceURIs(Collections.singletonMap("n0", "urn:sap-com:document:sap:soap:functions:mc-style"));
+        return xPath.selectNodes(document).stream()
+            .flatMap(itemNode -> ((Element) itemNode).elements().stream())
+            .map(node -> {
+                List<Element> items = node.elements();
+                FunPosition entity = new FunPosition();
+                items.forEach(element -> {
+                    if (element.getName().equalsIgnoreCase("TPLMA")) {
+                        entity.setParentId(element.getText().isEmpty() ? "0" : element.getText());
                     }
-                    positions.add(entity);
-                }
-            }
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        }
-        return positions;
+                    if (element.getName().equalsIgnoreCase("TPLNR")) {
+                        entity.setPositionCode(element.getText());
+                    }
+                    if (element.getName().equalsIgnoreCase("PLTXT")) {
+                        entity.setPositionName(element.getText());
+                    }
+                    if (element.getName().equalsIgnoreCase("MATYP")) {
+                        entity.setBranchCompanyCode(element.getText());
+                    }
+                    if (element.getName().equalsIgnoreCase("MATYT")) {
+                        entity.setBranchCompanyName(element.getText());
+                    }
+                });
+                return entity;
+            })
+            .collect(Collectors.toList());
     }
 
-    private static List<Device> parseDevices(String resXml) {
-        List<Device> devices = Lists.newArrayList();
-        try {
-            Document document = DocumentHelper.parseText(resXml);
-            DefaultXPath xPath = new DefaultXPath("//EtData1");
-            xPath.setNamespaceURIs(Collections.singletonMap("n0", "urn:sap-com:document:sap:soap:functions:mc-style"));
-            List<Node> list = xPath.selectNodes(document);
-            for (Object object : list) {
-                Element itemNode = (Element) object;
-                List<Element> items = itemNode.elements();
-                for (Element item : items) {
-                    Device entity = new Device();
-                    List<Element> elements = item.elements();
-                    for (Element element : elements) {
-                        if (element.getName().equalsIgnoreCase("HEQUI")) {
-                            String parentCode;
-                            if (element.getText().isEmpty()) {
-                                parentCode = "0";
-                            } else {
-                                parentCode = element.getText();
-                            }
-                            entity.setParentCode(parentCode);
-                        }
-                        if (element.getName().equalsIgnoreCase("EQUNR")) {
-                            entity.setDeviceCode(element.getText());
-                        }
-                        if (element.getName().equalsIgnoreCase("EQKTX")) {
-                            entity.setDeviceName(element.getText());
-                        }
-                        if (element.getName().equalsIgnoreCase("TPLNR")) {
-                            entity.setPositionCode(element.getText());
-                        }
+    /**
+     * 解析设备
+     *
+     * @param resXml resXml
+     * @return 设备列表
+     * @throws DocumentException DocumentException
+     */
+    private static List<Device> parseDevices(String resXml) throws DocumentException {
+        Document document = DocumentHelper.parseText(resXml);
+        DefaultXPath xPath = new DefaultXPath("//EtData1");
+        xPath.setNamespaceURIs(Collections.singletonMap("n0", "urn:sap-com:document:sap:soap:functions:mc-style"));
+        return xPath.selectNodes(document).stream()
+            .flatMap(itemNode -> ((Element) itemNode).elements().stream())
+            .map(node -> {
+                List<Element> items = node.elements();
+                Device entity = new Device();
+                items.forEach(element -> {
+                    if (element.getName().equalsIgnoreCase("HEQUI")) {
+                        entity.setParentCode(element.getText().isEmpty() ? "0" : element.getText());
                     }
-                    devices.add(entity);
-                }
-            }
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        }
-        return devices;
+                    if (element.getName().equalsIgnoreCase("EQUNR")) {
+                        entity.setDeviceCode(element.getText());
+                    }
+                    if (element.getName().equalsIgnoreCase("EQKTX")) {
+                        entity.setDeviceName(element.getText());
+                    }
+                    if (element.getName().equalsIgnoreCase("TPLNR")) {
+                        entity.setPositionCode(element.getText());
+                    }
+                });
+                return entity;
+            })
+            .collect(Collectors.toList());
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -255,19 +248,46 @@ public class FunPositionService {
         HttpEntity<String> request = new HttpEntity<>(xml, headers);
         ResponseEntity<String> entity = restTemplate.exchange(uri, HttpMethod.POST, request, String.class);
         String resXml = entity.getBody();
-        List<FunPosition> positions = parsePositions(resXml);
-        List<Device> devices = parseDevices(resXml);
-        for (FunPosition position : positions) {
-            Optional<FunPosition> optional = repository.findByPositionCode(position.getPositionCode());
-            if (!optional.isPresent()) {
-                repository.save(position);
+
+        List<FunPosition> positions = null;
+        try {
+            positions = parsePositions(resXml);
+        } catch (DocumentException e) {
+            log.error("解析功能位置出错: {}", e.getMessage());
+            try {
+                parsePositions(resXml);
+            } catch (DocumentException ex) {
+                log.error("重试解析功能位置方法失败");
+                ex.printStackTrace();
+            }
+        }
+        if (null != positions) {
+            for (FunPosition position : positions) {
+                Optional<FunPosition> optional = repository.findByPositionCode(position.getPositionCode());
+                if (!optional.isPresent()) {
+                    repository.save(position);
+                }
             }
         }
 
-        for (Device device : devices) {
-            Optional<Device> optional = deviceRepository.findByDeviceCode(device.getDeviceCode());
-            if (!optional.isPresent()) {
-                deviceRepository.save(device);
+        List<Device> devices = null;
+        try {
+            devices = parseDevices(resXml);
+        } catch (DocumentException e) {
+            log.error("解析设备出错: {}", e.getMessage());
+            try {
+                parseDevices(resXml);
+            } catch (DocumentException ex) {
+                log.error("重试解析设备方法失败");
+                ex.printStackTrace();
+            }
+        }
+        if (null != devices) {
+            for (Device device : devices) {
+                Optional<Device> optional = deviceRepository.findByDeviceCode(device.getDeviceCode());
+                if (!optional.isPresent()) {
+                    deviceRepository.save(device);
+                }
             }
         }
     }

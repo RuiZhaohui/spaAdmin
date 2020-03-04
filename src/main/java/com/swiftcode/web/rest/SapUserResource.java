@@ -50,6 +50,14 @@ public class SapUserResource {
         return CommonResult.success(sapUser, "查找成功");
     }
 
+    @ApiOperation("SAP USER 搜索")
+    @GetMapping("/users/search")
+    public CommonResult<List<SapUser>> searchSapUser(@RequestParam(value = "userCode", required = false) String userCode,
+                                                        @RequestParam(value = "userName", required = false) String userName) {
+        List<SapUser> list = service.searchUser(userCode, userName);
+        return CommonResult.success(list);
+    }
+
     @ApiOperation("SAP USER 列表")
     @GetMapping("/users")
     public CommonResult<List<SapUser>> findAll() {
