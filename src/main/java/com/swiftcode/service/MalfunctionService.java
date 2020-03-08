@@ -46,7 +46,7 @@ public class MalfunctionService {
     }
 
     public MalfunctionDTO add(MalfunctionDTO dto) {
-        Malfunction malfunction = new Malfunction();
+        Malfunction malfunction = repository.findBySapNo(dto.getSapNo()).orElse(new Malfunction());
         malfunction.newMalfunction(dto.getUserCode(), dto.getLocation(), dto.getDevice(), dto.getPictures(), dto.getVideo(), dto.getAudio(), dto.getTarget(), dto.getDesc(), dto.getAddDesc(), dto.getRemark(), dto.getIsStop(), dto.getTitle(), dto.getSapNo());
         Malfunction entity = repository.save(malfunction);
         return mapper.toDto(entity);
